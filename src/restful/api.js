@@ -57,7 +57,7 @@ export const  addUser = (params)=>{
 
 //添加评论
 export const  addComment = (courseId,content) => {
-	return Axios.put(`course/${courseId}/add/comment`, {courseId,content}).then(res=>res.data);
+	return Axios.put(`course/${courseId}/add/comment`, {content}).then(res=>res.data);
 }
 
 // 搜索查询
@@ -77,7 +77,7 @@ export const  updateLike = (courseId) => {
 
 // 获取评论
 export const  getComments = (courseId) => {
-    return Axios.get(`course/${courseId}/comment/`, {params: courseId}).then(res=>res.data);
+    return Axios.get(`course/${courseId}/comment/`).then(res=>res.data);
 }
 
 // 获取课程列表
@@ -111,6 +111,23 @@ export const  getTeacherById = (teacherId) => {
 export const  getProblems = (courseId,chapterId) => {
     return Axios.get(`course/${courseId}/detail/${chapterId}/problem/`).then(res=>res.data);
 }
+
+// 加入学习
+export const joinStudy = (courseId,can_watch) => {
+    console.log(courseId)
+    return Axios.get(`course/${courseId}/join`, {params: can_watch}).then( res => res.data );
+}
+
+// 提交题目回答
+export const submitAnswer = (courseId,params) => {
+    return Axios.post(`course/${courseId}/problem/`, {params}).then( res => res.data );
+}
+
+// 获取分数表
+export const getScores = () => {
+    return Axios.get(`center/scores`).then( res => res.data);
+}
+
 
 
 

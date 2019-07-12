@@ -3,13 +3,13 @@
     <div class="head-wrap">
       <div class="head-video">
         <div class="videos">
-          <video v-if="currentChapter" :src="GLOBAL.mediaUrl + currentChapter.video" controls="controls" preload="auto" width="100%" height="100%">
+          <video ref="videoplayer" v-if="currentChapter" :src="GLOBAL.mediaUrl + currentChapter.video" controls="controls" preload="auto" width="100%" height="100%">
             您的浏览器不支持视频播放。
           </video>
         </div>
         <div class="item">
-          <p class="name">{{course.name}}</p>
-          <p class="data">{{course.learn_number}}人在学&nbsp;&nbsp;&nbsp;&nbsp;课程总时长：{{course.numbers}}课时/{{course.hours}}小时</p>
+          <p class="name">{{ currentChapter.name }}</p>
+          <p class="data">{{course.learn_number}}11人在学&nbsp;&nbsp;&nbsp;&nbsp;课程总时长：{{course.numbers}}8课时/{{course.hours}}24小时</p>
           <p class="price">
             <span>价格:</span>
             <span class="sp1">¥{{ course.price }}</span>
@@ -17,16 +17,16 @@
           <div class="bottom">
             <p class="btns" v-if=" course.price > 0 ">
               <button class="btn1" @click="handleOfBuy">立即购买</button>
-              <button class="btn2">免费试学</button>
+              <button class="btn2" @click="handleOfStudy">免费试学</button>
             </p>
             <el-button v-if=" course.price == 0 " type="warning" plain @click="handleOfStudy">立即学习</el-button>
 
-            <p class="add" v-if = 'paymentInfo.has_price' @click='addShop(paymentInfo.valid_period)'>
+<!--             <p class="add" v-if = 'paymentInfo.has_price' @click='addShop(paymentInfo.valid_period)'>
               <img src="../../../static/images/shop.svg" alt="">
               <transition name="bounce"  v-on:after-enter="afterEnter">
                 <p v-if="show" class='active'>+1</p>
               </transition>
-            </p>
+            </p> -->
 
           </div>
         </div>
@@ -51,7 +51,7 @@
           </el-tab-pane>
           <el-tab-pane label="课程章节" name="chapter">
             <div v-for="chapter in course.chapters" :key="chapter.id" class="text item">
-              <el-link type="info">
+              <el-link type="info" @click="handleOfChange(chapter)">
                 <img src="../../../static/images/play.svg" alt>
                 {{ chapter.name }}
               </el-link>             
@@ -80,7 +80,8 @@
                 </el-aside>
                 <el-main style="padding-top:0;">
                   <el-link type="success" :underline="false">{{ comment.user.name }}</el-link>
-                  <p>{{ comment.content }}</p>                    
+                  <p>{{ comment.content }}</p>  
+                  <p>{{ comment.date }}</p>                   
                 </el-main>
               </el-container>                                                   
               <el-divider></el-divider>
@@ -90,46 +91,45 @@
           <el-tab-pane label="章节检测" name="problem">
             <div class="text item">
               <el-form ref="form" :model="form" label-width="80px">
-                <el-form-item label="">
-                  <p>课程标题 <span style="margin-left:100px;">成绩：<span style="color:red;">25分</span></span></p>
+                <el-form-item label="" v-if="problems.length>0">
+                  <p>{{ currentChapter.name }} 习题检测 
+                    <span v-if="!show" style="margin-left:100px;">成绩：
+                      <span style="color:red;">{{ scores }}分
+                      </span>
+                    </span>
+                  </p>
+                  <el-divider></el-divider>
                 </el-form-item>               
-                <el-divider></el-divider>
 
-                <el-form-item label="" v-for="(problem,index) in problems">
+                <el-form-item label="" v-for="(problem,index) in problems" :key="problem.id">
                   <p>{{ index + 1 }} . {{ problem.title }}</p> 
-                  <el-radio-group v-model="form.resource1">
+                  <el-radio-group v-model="form['p' + problem.id]">
                     <el-radio :label="option.id" v-for="option in problem.options" :key="option.id">{{ option.title }}
                     </el-radio>
                   </el-radio-group>
-                  <div>
-                    <span style="margin-left:25px;">我的答案：A</span>
-                    <span style="margin-left:25px;">得分：<span style="color:red;">25.0分</span></span>
-                    <span style="margin-left:25px;color:green;font-size:24px;">
+                  <div v-if="!show" style="margin-left:25px;">
+                    <span>我的答案：{{ problem.answer.option_title[0] }}</span>
+                    <span v-if="problem.score == 0" style="margin-left:25px;color:green;">
+                      正确答案：{{ problem.solutions[0].option.title[0] }}
+                    </span>
+                    <span style="margin-left:25px;">得分：
+                      <span style="margin-left:25px;color:red;">{{ problem.score }}分</span>
+                    </span>
+
+                    <span v-if="problem.score > 0" style="margin-left:25px;color:green;font-size:24px;">
                       <i class="el-icon-success"></i>
                     </span>
+                    <span v-else style="margin-left:25px;color:red;font-size:24px;">
+                      <i class="el-icon-error"></i>
+                    </span>
+
                   </div>
                   <el-divider></el-divider>
                 </el-form-item>
-                
 
-                <!-- <el-form-item label="">
-                  <p>2.2018年“九合一”选举罕见地出现“一人救一党,一党救高雄”的现象,其中“一人”指的是()。</p>
-                  <el-radio-group v-model="form.resource2">
-                    <el-radio label="1">A.韩国瑜</el-radio>
-                    <el-radio label="2">B.蔡英文</el-radio>
-                    <el-radio label="3">C.陈其迈</el-radio>
-                    <el-radio label="4">D.赖清德</el-radio>
-                  </el-radio-group>
-                  <div>
-                    <span style="margin-left:25px;">我的答案：A</span>
-                    <span style="margin-left:25px;">得分：<span style="color:red;">0.0分</span></span>
-                    <span style="margin-left:25px;color:red;font-size:24px;"><i class="el-icon-error"></i></span>
-                  </div>
-                  <el-divider></el-divider>
-                </el-form-item> -->
-
-                  <el-form-item>
-                    <el-button @click="onSubmit" type="info">提交</el-button>
+                  <el-form-item v-if="show">
+                    <el-button round @click="handleOfCancel">取消</el-button>
+                    <el-button @click="submitAnswer" type="success" round>提交</el-button>
                   </el-form-item>
 
             </el-form>
@@ -150,7 +150,7 @@ export default {
     return {
       course:{},
       paymentInfo:{},
-      show:false,
+      show:true,
       comments: [],
       problems: [],
       activeName: 'introduce',
@@ -159,24 +159,27 @@ export default {
       isLike: false,
       currentChapter: {},
       like: {},
+      scores: 0.0,
       navList: [
       { id: 1, title: '详情介绍', name: 'introduce'},
       { id: 2, title: '课程章节', name: 'chapter'},
       { id: 3, title: '用户评论', name: 'comment'},
       { id: 4, title: '常见问题', name: 'problem'},
       ],
-      form: {
-        resource1: '1',
-        resource2: '2',
-      },
+      form: {},
     }
   },
   methods:{
-    onSubmit() {
-      console.log('submit!');
-    },
-    afterEnter(){
-      this.show = false;
+    // afterEnter(){
+    //   this.show = false;
+    // },
+    // handleOfVideoPlay(param) { // param = true,则代表能播放，为false则不能播放
+    //   let video = this.$refs.videoplayer;
+    //   param == true ? video.play() : video.pause(); 
+    // },
+    handleOfChange(chapter){
+      console.log(chapter);
+      this.currentChapter = chapter;           
     },
     handleClick(tab, event) {
       console.log(tab.paneName);
@@ -194,18 +197,26 @@ export default {
       } else {
         this.$http.updateLike(this.courseId).then( res => {
           this.getLikes();
-          console.log(res);
         });
       }
     },
     getProblems() {
       this.$http.getProblems(this.courseId,this.currentChapter.id).then(res => {
-        console.log(res.data.problems);
         this.problems = res.data.problems;
+        this.scores = res.data.scores;
+        let formData = {}
+        for (let p of this.problems){
+          if (p.answer && p.answer.option_id){
+            this.show = false;
+          }
+          formData['p' + p.id] = (p.answer ? p.answer.option_id : '');
+        }
+        this.form = formData
       })
     },
     getComments() {
       this.$http.getComments(this.courseId).then(res => {
+        console.log(res);
         this.comments = res.data
       })
     },
@@ -217,8 +228,25 @@ export default {
     handleOfBuy() {
       console.log('购买成功');
     },
-    handleOfStudy() {
-      console.log('开始学习');
+    handleOfStudy(courseId) {
+      let token = this.$cookies.get('token');
+      if(!token){
+        alert('未登录，请先登录！');
+      } else {
+        let can_watch = 'False';
+        if(this.course.price == 0){
+          can_watch = 'True';
+        }
+        this.$http.joinStudy(this.courseId,can_watch).then( res => {
+          console.log(res);
+          if(res.error){
+
+          } else {
+            // this.handleOfVideoPlay();
+          }
+          
+        });
+      }
     },
     handleOfCancel() {
       this.content = '';
@@ -228,6 +256,15 @@ export default {
         if (res.msg == 'ok') {
           this.content = '';
           this.getComments();
+        }
+      });
+    },
+    submitAnswer() {
+      this.$http.submitAnswer(this.courseId,this.form).then( res=> {
+        if(res.error){
+          alert('error');
+        } else {
+          this.getProblems();
         }
       });
     },

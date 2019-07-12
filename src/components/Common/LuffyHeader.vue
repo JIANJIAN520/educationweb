@@ -27,24 +27,18 @@
                    <img v-else src="../../../static/images/user.jpg" alt="">
                   <ul class="my_account" v-show = 'isShow'>
                       <li>
-                        我的账户
-                        <i>></i>
+                        <router-link :to = "{name:'Center'}">
+                          我的账户
+                        </router-link>                        
                       </li>
                       <li>
                         我的订单
-                        <i>></i>
-                      </li>
-                      <li>
-                        我的优惠券
-                        <i>></i>
                       </li>
                       <li>
                         我的消息<span class="msg">(40)</span>
-                        <i>></i>
                       </li>
                       <li @click ='logout'>
                        退出
-                        <i>></i>
                       </li>
                   </ul>
                 </div> 
@@ -75,7 +69,7 @@ export default {
           {id:'2', name:'Course', title:'课程'},
           // {id:'3', name:'', title:'题库'},`
           {id:'4', name:'Teacher', title:'师资介绍'},
-          {id:'5', name:'Center', title:'个人中心'}
+          // {id:'5', name:'Center', title:'个人中心'}
         ],
         isShow:false,
         inputQuery: '',
